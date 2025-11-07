@@ -22,19 +22,31 @@ class InsightsGenerator:
 
         # Initialize LLM client (same as analyzer)
         if self.provider == 'claude':
-            self.client = Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
+            # Get base URL from environment variable or config file
+            base_url = os.getenv('ANTHROPIC_BASE_URL') or config.get('claude', {}).get('base_url')
+            client_kwargs = {'api_key': os.getenv('ANTHROPIC_API_KEY')}
+            if base_url:
+                client_kwargs['base_url'] = base_url
+            self.client = Anthropic(**client_kwargs)
             self.model = config.get('claude', {}).get('model', 'claude-3-5-sonnet-20241022')
 
         elif self.provider == 'openai':
-            self.client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+            # Get base URL from environment variable or config file
+            base_url = os.getenv('OPENAI_BASE_URL') or config.get('openai', {}).get('base_url')
+            client_kwargs = {'api_key': os.getenv('OPENAI_API_KEY')}
+            if base_url:
+                client_kwargs['base_url'] = base_url
+            self.client = OpenAI(**client_kwargs)
             self.model = config.get('openai', {}).get('model', 'gpt-4-turbo-preview')
 
         elif self.provider == 'gemini':
+            # Get base URL from environment variable or config file (if supported in future)
             genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
             self.model = config.get('gemini', {}).get('model', 'gemini-pro')
 
         elif self.provider == 'ollama':
-            self.ollama_host = os.getenv('OLLAMA_HOST', 'http://localhost:11434')
+            # Support both OLLAMA_HOST (legacy) and config base_url
+            self.ollama_host = os.getenv('OLLAMA_HOST') or config.get('ollama', {}).get('base_url', 'http://localhost:11434')
             self.model = config.get('ollama', {}).get('model', 'llama2')
 
         logger.info(f"Initialized insights generator with provider: {self.provider}")

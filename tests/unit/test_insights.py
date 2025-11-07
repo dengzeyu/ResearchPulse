@@ -378,3 +378,119 @@ Summary: This topic has no evidence.
         assert len(topics) == 1
         assert topics[0]['name'] == "Incomplete Topic"
         assert 'summary' in topics[0]
+
+    @patch.dict('os.environ', {'ANTHROPIC_API_KEY': 'test-key', 'ANTHROPIC_BASE_URL': 'https://custom.anthropic.com'})
+    @patch('insights.Anthropic')
+    def test_claude_custom_base_url_from_env(self, mock_anthropic):
+        """Test Claude initialization with custom base URL from environment variable."""
+        config = {'provider': 'claude', 'claude': {'model': 'claude-3-5-sonnet-20241022'}}
+        generator = InsightsGenerator(config)
+
+        assert generator.provider == 'claude'
+        mock_anthropic.assert_called_once_with(api_key='test-key', base_url='https://custom.anthropic.com')
+
+    @patch.dict('os.environ', {'ANTHROPIC_API_KEY': 'test-key'})
+    @patch('insights.Anthropic')
+    def test_claude_custom_base_url_from_config(self, mock_anthropic):
+        """Test Claude initialization with custom base URL from config file."""
+        config = {
+            'provider': 'claude',
+            'claude': {
+                'model': 'claude-3-5-sonnet-20241022',
+                'base_url': 'https://config.anthropic.com'
+            }
+        }
+        generator = InsightsGenerator(config)
+
+        assert generator.provider == 'claude'
+        mock_anthropic.assert_called_once_with(api_key='test-key', base_url='https://config.anthropic.com')
+
+    @patch.dict('os.environ', {'ANTHROPIC_API_KEY': 'test-key', 'ANTHROPIC_BASE_URL': 'https://env.anthropic.com'})
+    @patch('insights.Anthropic')
+    def test_claude_env_base_url_precedence(self, mock_anthropic):
+        """Test that environment variable takes precedence over config file for Claude."""
+        config = {
+            'provider': 'claude',
+            'claude': {
+                'model': 'claude-3-5-sonnet-20241022',
+                'base_url': 'https://config.anthropic.com'
+            }
+        }
+        generator = InsightsGenerator(config)
+
+        assert generator.provider == 'claude'
+        # Environment variable should take precedence
+        mock_anthropic.assert_called_once_with(api_key='test-key', base_url='https://env.anthropic.com')
+
+    @patch.dict('os.environ', {'OPENAI_API_KEY': 'test-key', 'OPENAI_BASE_URL': 'https://custom.openai.com'})
+    @patch('insights.OpenAI')
+    def test_openai_custom_base_url_from_env(self, mock_openai):
+        """Test OpenAI initialization with custom base URL from environment variable."""
+        config = {'provider': 'openai', 'openai': {'model': 'gpt-4-turbo-preview'}}
+        generator = InsightsGenerator(config)
+
+        assert generator.provider == 'openai'
+        mock_openai.assert_called_once_with(api_key='test-key', base_url='https://custom.openai.com')
+
+    @patch.dict('os.environ', {'OPENAI_API_KEY': 'test-key'})
+    @patch('insights.OpenAI')
+    def test_openai_custom_base_url_from_config(self, mock_openai):
+        """Test OpenAI initialization with custom base URL from config file."""
+        config = {
+            'provider': 'openai',
+            'openai': {
+                'model': 'gpt-4-turbo-preview',
+                'base_url': 'https://config.openai.com'
+            }
+        }
+        generator = InsightsGenerator(config)
+
+        assert generator.provider == 'openai'
+        mock_openai.assert_called_once_with(api_key='test-key', base_url='https://config.openai.com')
+
+    @patch.dict('os.environ', {'OPENAI_API_KEY': 'test-key', 'OPENAI_BASE_URL': 'https://env.openai.com'})
+    @patch('insights.OpenAI')
+    def test_openai_env_base_url_precedence(self, mock_openai):
+        """Test that environment variable takes precedence over config file for OpenAI."""
+        config = {
+            'provider': 'openai',
+            'openai': {
+                'model': 'gpt-4-turbo-preview',
+                'base_url': 'https://config.openai.com'
+            }
+        }
+        generator = InsightsGenerator(config)
+
+        assert generator.provider == 'openai'
+        # Environment variable should take precedence
+        mock_openai.assert_called_once_with(api_key='test-key', base_url='https://env.openai.com')
+
+    def test_ollama_custom_base_url_from_config(self):
+        """Test Ollama initialization with custom base URL from config file."""
+        config = {
+            'provider': 'ollama',
+            'ollama': {
+                'model': 'llama2',
+                'base_url': 'http://custom.ollama.host:11434'
+            }
+        }
+        generator = InsightsGenerator(config)
+
+        assert generator.provider == 'ollama'
+        assert generator.ollama_host == 'http://custom.ollama.host:11434'
+
+    @patch.dict('os.environ', {'OLLAMA_HOST': 'http://env.ollama.host:11434'})
+    def test_ollama_env_precedence_over_config(self):
+        """Test that OLLAMA_HOST environment variable takes precedence over config."""
+        config = {
+            'provider': 'ollama',
+            'ollama': {
+                'model': 'llama2',
+                'base_url': 'http://config.ollama.host:11434'
+            }
+        }
+        generator = InsightsGenerator(config)
+
+        assert generator.provider == 'ollama'
+        # Environment variable should take precedence
+        assert generator.ollama_host == 'http://env.ollama.host:11434'
