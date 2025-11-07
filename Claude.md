@@ -19,7 +19,7 @@ AI-powered research paper aggregator that captures the pulse of scientific resea
 │   │   ├── reddit.py      # Reddit API (free via PRAW)
 │   │   ├── hackernews.py  # HackerNews API (free)
 │   │   ├── github.py      # GitHub trending (free)
-│   │   └── twitter.py     # Twitter/X (optional, paid)
+│   │   └── google_search.py  # Google Custom Search (100 free/day)
 │   ├── analyzer.py        # LLM-powered paper analysis
 │   ├── insights.py        # Generate research ideas & hot topics
 │   ├── processor.py       # Filter, rank, deduplicate papers
@@ -51,9 +51,12 @@ AI-powered research paper aggregator that captures the pulse of scientific resea
 **Social Signals:**
 - **Reddit API** (free, via PRAW) - r/MachineLearning, r/science, r/ArtificialIntelligence
 - **HackerNews API** (free) - paper discussions and trending research
-- **Twitter/X** (optional, requires paid API $100+/month) - research hashtags
-- **arXiv trackbacks** (free) - papers linking to arXiv
-- **GitHub trending** (free) - research repos and paper implementations
+- **GitHub API** (free) - research repos and paper implementations
+- **Google Custom Search** (100 free queries/day, then $5/1000 queries) - Search public content on:
+  - LinkedIn posts: `site:linkedin.com "machine learning paper" OR "arxiv"`
+  - Twitter/X posts: `site:twitter.com OR site:x.com "arxiv.org"`
+  - Medium articles: `site:medium.com "research paper"`
+  - Any publicly indexed research discussions
 
 ### 2. AI Analysis
 **LLM Integration (configurable):**
@@ -150,11 +153,20 @@ class GitHubFetcher:
         """Find GitHub repos implementing arXiv papers"""
 ```
 
-**src/social/twitter.py** (optional)
+**src/social/google_search.py**
 ```python
-class TwitterFetcher:
-    def get_trending_papers(self, hashtags: List[str]) -> List[Tweet]:
-        """Requires paid Twitter API access ($100+/month)"""
+class GoogleSearchFetcher:
+    def search_site(self, site: str, query: str, days: int = 7) -> List[Result]:
+        """Search specific site using Google Custom Search API
+
+        Examples:
+        - search_site("linkedin.com", "machine learning paper arxiv")
+        - search_site("twitter.com", "arxiv.org/abs")
+        - search_site("medium.com", "research paper")
+        """
+
+    def search_multiple_sites(self, sites: List[str], query: str) -> List[Result]:
+        """Search across multiple sites: site:linkedin.com OR site:twitter.com"""
 ```
 
 ## Configuration
@@ -241,11 +253,25 @@ github:
   track_paper_implementations: true  # Repos with arXiv links
   min_stars: 50
 
-# Optional paid sources
-twitter:
-  enabled: false  # Requires paid API ($100+/month)
-  hashtags: ["#MachineLearning", "#AI", "#DeepLearning", "#NeurIPS", "#ICLR"]
-  track_users: ["ylecun", "goodfellow_ian", "karpathy"]
+# Google Custom Search (100 free queries/day, then $5/1000)
+google_search:
+  enabled: true
+  daily_query_limit: 100  # Free tier limit
+  search_targets:
+    - site: "linkedin.com"
+      queries:
+        - "machine learning paper"
+        - "arxiv.org"
+        - "new research"
+    - site: "twitter.com OR site:x.com"
+      queries:
+        - "arxiv.org/abs"
+        - "#MachineLearning arxiv"
+    - site: "medium.com"
+      queries:
+        - "research paper"
+        - "paper review"
+  date_filter: "week"  # Recent content only
 ```
 
 ## Docker Deployment
@@ -293,8 +319,9 @@ REDDIT_CLIENT_SECRET=...
 REDDIT_USER_AGENT=ResearchPulse/1.0
 GITHUB_TOKEN=...  # Optional, increases rate limits
 
-# Optional Paid APIs
-TWITTER_BEARER_TOKEN=...  # Requires paid plan ($100+/month)
+# Google Custom Search (100 free queries/day)
+GOOGLE_SEARCH_API_KEY=...
+GOOGLE_SEARCH_ENGINE_ID=...  # Create at https://programmablesearchengine.google.com/
 
 # Journal Scraping (if needed)
 SPRINGER_API_KEY=...
@@ -340,7 +367,7 @@ docker run -p 8080:80 -v ./output:/usr/share/nginx/html nginx
    - Author publications (tracked authors)
    - Citation tracking (papers citing key works)
    - Journal websites (Nature, Science, etc.)
-2. **Collect social data** from Reddit, HackerNews, GitHub (all free APIs)
+2. **Collect social data** from Reddit, HackerNews, GitHub, Google Custom Search (all free tier available)
 3. **Deduplicate & filter** papers
 4. **Analyze with LLM**: summarize, extract insights
 5. **Rank papers** by relevance + social buzz + author reputation

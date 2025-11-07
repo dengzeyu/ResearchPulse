@@ -2,13 +2,13 @@
 
 **AI-powered research paper aggregator that captures the pulse of scientific research.**
 
-ResearchPulse automatically collects papers from multiple sources (arXiv, Google Scholar, PubMed, journals), analyzes them with LLMs (Claude, GPT-4, Gemini, Ollama), tracks social media buzz (Twitter, LinkedIn, WeChat, Reddit), and generates a beautiful static blog with daily insights, research ideas, and trending topics.
+ResearchPulse automatically collects papers from multiple sources (arXiv, Google Scholar, PubMed, journals), analyzes them with LLMs (Claude, GPT-4, Gemini, Ollama), tracks social media buzz using free APIs (Reddit, HackerNews, GitHub) plus Google Custom Search for LinkedIn/Twitter content, and generates a beautiful static blog with daily insights, research ideas, and trending topics.
 
 ## Features
 
 - 📚 **Multi-source aggregation**: arXiv, Google Scholar, Semantic Scholar, PubMed, Nature, Science
 - 🤖 **AI-powered analysis**: Summarization, key contributions, research ideas (5/day), hot topics
-- 🌐 **Social media tracking**: Reddit, HackerNews, GitHub trending (all free APIs)
+- 🌐 **Social media tracking**: Reddit, HackerNews, GitHub + Google Custom Search for LinkedIn/Twitter (100 free queries/day)
 - 👥 **Author tracking**: Follow specific researchers and their publications
 - 📄 **Citation tracking**: Monitor papers citing influential works
 - 🎨 **Static blog generation**: Beautiful, fast, deployable anywhere
