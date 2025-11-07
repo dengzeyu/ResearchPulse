@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResearchPulse - {{ date|datetime('%B %d, %Y') }}</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>ResearchPulse</h1>
+            <p class="tagline">AI-powered research paper feed</p>
+            <p class="date">{{ date|datetime('%B %d, %Y') }}</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Hot Topics Section -->
+        {% if hot_topics %}
+        <section class="hot-topics">
+            <h2>🔥 Hot Topics</h2>
+            <div class="topics-grid">
+                {% for topic in hot_topics %}
+                <div class="topic-card">
+                    <h3>{{ topic.name }}</h3>
+                    <p>{{ topic.summary }}</p>
+                    {% if topic.evidence %}
+                    <p class="evidence">{{ topic.evidence }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Research Ideas Section -->
+        {% if research_ideas %}
+        <section class="research-ideas">
+            <h2>💡 Research Ideas</h2>
+            <div class="ideas-list">
+                {% for idea in research_ideas %}
+                <div class="idea-card">
+                    <h3>{{ idea.title }}</h3>
+                    {% if idea.description %}
+                    <p><strong>Description:</strong> {{ idea.description }}</p>
+                    {% endif %}
+                    {% if idea.impact %}
+                    <p><strong>Why it matters:</strong> {{ idea.impact }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Papers Section -->
+        <section class="papers">
+            <h2>📚 Papers ({{ total_papers }})</h2>
+            <div class="papers-list">
+                {% for paper in papers %}
+                <article class="paper-card">
+                    <div class="paper-header">
+                        <h3>
+                            <a href="{{ paper.url }}" target="_blank">{{ paper.title }}</a>
+                        </h3>
+                        <div class="paper-meta">
+                            <span class="source">{{ paper.source }}</span>
+                            <span class="date">{{ paper.published_date|datetime('%Y-%m-%d') }}</span>
+                            {% if paper.citations > 0 %}
+                            <span class="citations">{{ paper.citations }} citations</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="paper-authors">
+                        {{ paper.authors[:5]|join(', ') }}{% if paper.authors|length > 5 %}, et al.{% endif %}
+                    </div>
+
+                    {% if paper.summary %}
+                    <div class="paper-summary">
+                        <strong>Summary:</strong> {{ paper.summary }}
+                    </div>
+                    {% else %}
+                    <div class="paper-abstract">
+                        {{ paper.abstract[:300] }}{% if paper.abstract|length > 300 %}...{% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if paper.contributions %}
+                    <div class="paper-contributions">
+                        <strong>Key Contributions:</strong>
+                        <ul>
+                            {% for contribution in paper.contributions %}
+                            <li>{{ contribution }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <div class="paper-footer">
+                        <div class="paper-links">
+                            <a href="{{ paper.url }}" target="_blank">View Paper</a>
+                            {% if paper.pdf_url %}
+                            | <a href="{{ paper.pdf_url }}" target="_blank">PDF</a>
+                            {% endif %}
+                            {% if paper.arxiv_id %}
+                            | <span class="arxiv-id">arXiv:{{ paper.arxiv_id }}</span>
+                            {% endif %}
+                        </div>
+
+                        {% if paper.social_score > 0 %}
+                        <div class="social-signals">
+                            <span class="social-score">🔥 {{ paper.social_score|round(1) }}</span>
+
+                            {% if paper.social_signals %}
+                                {% if paper.social_signals.reddit %}
+                                <span title="Reddit">🔴 {{ paper.social_signals.reddit.total_score }}</span>
+                                {% endif %}
+                                {% if paper.social_signals.hackernews %}
+                                <span title="HackerNews">🟠 {{ paper.social_signals.hackernews.total_score }}</span>
+                                {% endif %}
+                                {% if paper.social_signals.github %}
+                                <span title="GitHub">⭐ {{ paper.social_signals.github.total_stars }}</span>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Generated by ResearchPulse | <a href="data.json">JSON Data</a> | <a href="../index.html">Home</a></p>
+        </div>
+    </footer>
+</body>
+</html>

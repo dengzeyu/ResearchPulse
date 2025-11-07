@@ -1,0 +1,16 @@
+.git
+.gitignore
+*.md
+.env
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+output/*
+logs/*
+.vscode
+.idea
+*.swp
+*.swo
+*~
