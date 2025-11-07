@@ -7,7 +7,14 @@ AI-powered research paper aggregator that generates daily insights, research ide
 ```
 /
 ├── src/
-│   ├── fetchers/          # Paper sources (arXiv, Google Scholar, Semantic Scholar, PubMed)
+│   ├── fetchers/
+│   │   ├── arxiv.py       # arXiv API
+│   │   ├── scholar.py     # Google Scholar
+│   │   ├── semantic.py    # Semantic Scholar
+│   │   ├── pubmed.py      # PubMed
+│   │   ├── author.py      # Track specific authors
+│   │   ├── citations.py   # Track paper citations
+│   │   └── journals.py    # Scrape journal websites
 │   ├── social/            # Social media APIs (Twitter/X, Reddit, HackerNews)
 │   ├── analyzer.py        # LLM-powered paper analysis
 │   ├── insights.py        # Generate research ideas & hot topics
@@ -18,10 +25,12 @@ AI-powered research paper aggregator that generates daily insights, research ide
 │   ├── daily.html         # Daily feed page template
 │   └── paper.html         # Individual paper card
 ├── config/
-│   ├── queries.yaml       # Research areas & keywords
+│   ├── tracking.yaml      # Keywords, authors, papers, journals to track
 │   ├── llm.yaml           # LLM provider configs
 │   └── social.yaml        # Social media configs
 ├── output/                # Generated static site
+├── .env                   # API keys and secrets
+├── .env.example           # Example configuration
 ├── Dockerfile
 └── docker-compose.yml
 ```
@@ -90,6 +99,27 @@ def generate_static_site(feed: DailyFeed, output_dir: str):
     """Generate static HTML/CSS/JS blog"""
 ```
 
+**src/fetchers/author.py**
+```python
+class AuthorTracker:
+    def fetch_author_papers(self, author: str, days: int) -> List[Paper]:
+        """Fetch recent papers by specific author"""
+```
+
+**src/fetchers/citations.py**
+```python
+class CitationTracker:
+    def fetch_citing_papers(self, arxiv_id: str, days: int) -> List[Paper]:
+        """Fetch papers citing a key paper"""
+```
+
+**src/fetchers/journals.py**
+```python
+class JournalScraper:
+    def fetch_journal_papers(self, journal_url: str, sections: List[str]) -> List[Paper]:
+        """Scrape latest papers from journal website"""
+```
+
 **src/social/twitter.py**
 ```python
 class TwitterFetcher:
@@ -112,15 +142,46 @@ tasks:
   hot_topics: true
 ```
 
-**config/queries.yaml**
+**config/tracking.yaml**
 ```yaml
-areas:
-  - name: "Machine Learning"
-    keywords: ["neural networks", "transformers", "LLMs"]
-    sources: ["arxiv", "google_scholar"]
-  - name: "Quantum Computing"
-    keywords: ["quantum algorithms", "qubits"]
-    sources: ["arxiv", "semantic_scholar"]
+# Track by keywords
+keywords:
+  - area: "Machine Learning"
+    terms: ["neural networks", "transformers", "LLMs", "diffusion models"]
+    sources: ["arxiv", "google_scholar", "semantic_scholar"]
+  - area: "Quantum Computing"
+    terms: ["quantum algorithms", "qubits", "quantum error correction"]
+    sources: ["arxiv", "nature", "science"]
+
+# Track specific authors
+authors:
+  - name: "Yoshua Bengio"
+    affiliations: ["Mila", "University of Montreal"]
+  - name: "Geoffrey Hinton"
+    affiliations: ["Google", "University of Toronto"]
+  - name: "Yann LeCun"
+    affiliations: ["Meta", "NYU"]
+
+# Track papers citing these influential works
+key_papers:
+  - title: "Attention Is All You Need"
+    arxiv_id: "1706.03762"
+    track_citations: true
+  - title: "BERT: Pre-training of Deep Bidirectional Transformers"
+    arxiv_id: "1810.04805"
+    track_citations: true
+
+# Track specific journals
+journals:
+  - name: "Nature"
+    url: "https://www.nature.com"
+    sections: ["articles", "letters"]
+  - name: "Science"
+    url: "https://www.science.org"
+  - name: "Nature Machine Intelligence"
+    url: "https://www.nature.com/natmachintell"
+  - name: "JMLR"
+    url: "https://jmlr.org"
 ```
 
 **config/social.yaml**
@@ -150,25 +211,23 @@ CMD ["python", "main.py"]
 services:
   paper-feed:
     build: .
-    environment:
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - TWITTER_API_KEY=${TWITTER_API_KEY}
-      - REDDIT_API_KEY=${REDDIT_API_KEY}
+    env_file:
+      - .env
     volumes:
       - ./output:/app/output
       - ./config:/app/config
     restart: always
 ```
 
-## Environment Variables
+## Configuration Files
 
+**.env** (API keys and secrets)
 ```bash
 # LLM APIs (choose one or more)
 ANTHROPIC_API_KEY=sk-ant-...
 OPENAI_API_KEY=sk-...
 GOOGLE_API_KEY=...
-OLLAMA_HOST=http://localhost:11434  # For local models
+OLLAMA_HOST=http://localhost:11434
 
 # Paper Sources
 SERPAPI_KEY=...
@@ -179,33 +238,58 @@ TWITTER_API_KEY=...
 TWITTER_API_SECRET=...
 REDDIT_CLIENT_ID=...
 REDDIT_CLIENT_SECRET=...
+
+# Journal Scraping (if needed)
+SPRINGER_API_KEY=...
+ELSEVIER_API_KEY=...
+```
+
+**.env.example** (Template for users)
+```bash
+# Copy this to .env and fill in your keys
+ANTHROPIC_API_KEY=
+OPENAI_API_KEY=
+SERPAPI_KEY=
+# ... (all keys with empty values)
 ```
 
 ## Deployment
 
 ```bash
-# Build container
+# 1. Setup environment
+cp .env.example .env
+# Edit .env with your API keys
+
+# 2. Configure tracking
+# Edit config/tracking.yaml with your keywords, authors, papers, journals
+
+# 3. Build container
 docker-compose build
 
-# Run with environment variables
+# 4. Run container
 docker-compose up -d
 
-# View logs
+# 5. View logs
 docker logs -f paper-feed
 
-# Serve static output
+# 6. Serve static output
 docker run -p 8080:80 -v ./output:/usr/share/nginx/html nginx
 ```
 
 ## Daily Workflow
 
-1. **Fetch papers** from academic sources (last 24h)
+1. **Fetch papers** from multiple sources:
+   - Keyword searches (arXiv, Google Scholar, Semantic Scholar, PubMed)
+   - Author publications (tracked authors)
+   - Citation tracking (papers citing key works)
+   - Journal websites (Nature, Science, etc.)
 2. **Collect social data** from Twitter/Reddit/HN
-3. **Analyze with LLM**: summarize, extract insights
-4. **Rank papers** by relevance + social buzz
-5. **Generate insights**: 5 research ideas + hot topics
-6. **Build static site** with styled templates
-7. **Deploy to server** (nginx/GitHub Pages)
+3. **Deduplicate & filter** papers
+4. **Analyze with LLM**: summarize, extract insights
+5. **Rank papers** by relevance + social buzz + author reputation
+6. **Generate insights**: 5 research ideas + hot topics
+7. **Build static site** with styled templates
+8. **Deploy to server** (nginx/GitHub Pages)
 
 ## Output Example
 
@@ -229,8 +313,10 @@ docker run -p 8080:80 -v ./output:/usr/share/nginx/html nginx
 
 ## Security
 
-- Store all API keys in environment variables
-- Use read-only volumes for config
-- Rate limit API calls
-- Validate external data
+- Store all API keys in `.env` file (never commit to git)
+- Add `.env` to `.gitignore`
+- Use `.env.example` as template (no real keys)
+- Use read-only volumes for config in Docker
+- Rate limit API calls to avoid abuse
+- Validate and sanitize external data
 - Run container as non-root user
