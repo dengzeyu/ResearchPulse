@@ -9,16 +9,18 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy project files and install Python dependencies
+# Copy project files and source code for installation
 COPY pyproject.toml .
 COPY README.md .
+COPY src/ ./src/
+
+# Install Python dependencies
 RUN pip install --no-cache-dir .
 
 # Download NLTK data
 RUN python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords')"
 
-# Copy application code
-COPY src/ ./src/
+# Copy remaining application files
 COPY config/ ./config/
 COPY templates/ ./templates/
 
