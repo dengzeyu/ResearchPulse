@@ -8,7 +8,7 @@ ResearchPulse automatically collects papers from multiple sources (arXiv, Google
 
 - 📚 **Multi-source aggregation**: arXiv, Google Scholar, Semantic Scholar, PubMed, Nature, Science
 - 🤖 **AI-powered analysis**: Summarization, key contributions, research ideas (5/day), hot topics
-- 🌐 **Social media tracking**: Twitter/X, LinkedIn, WeChat, Reddit, HackerNews
+- 🌐 **Social media tracking**: Reddit, HackerNews, GitHub trending (all free APIs)
 - 👥 **Author tracking**: Follow specific researchers and their publications
 - 📄 **Citation tracking**: Monitor papers citing influential works
 - 🎨 **Static blog generation**: Beautiful, fast, deployable anywhere

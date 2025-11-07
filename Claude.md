@@ -16,11 +16,10 @@ AI-powered research paper aggregator that captures the pulse of scientific resea
 │   │   ├── citations.py   # Track paper citations
 │   │   └── journals.py    # Scrape journal websites
 │   ├── social/
-│   │   ├── twitter.py     # Twitter/X API
-│   │   ├── linkedin.py    # LinkedIn API
-│   │   ├── wechat.py      # WeChat public accounts
-│   │   ├── reddit.py      # Reddit API
-│   │   └── hackernews.py  # HackerNews API
+│   │   ├── reddit.py      # Reddit API (free via PRAW)
+│   │   ├── hackernews.py  # HackerNews API (free)
+│   │   ├── github.py      # GitHub trending (free)
+│   │   └── twitter.py     # Twitter/X (optional, paid)
 │   ├── analyzer.py        # LLM-powered paper analysis
 │   ├── insights.py        # Generate research ideas & hot topics
 │   ├── processor.py       # Filter, rank, deduplicate papers
@@ -50,11 +49,11 @@ AI-powered research paper aggregator that captures the pulse of scientific resea
 - PubMed API
 
 **Social Signals:**
-- **Twitter/X API** - trending research hashtags, paper discussions
-- **LinkedIn API** - professional network posts, researcher updates
-- **WeChat Public Accounts** - Chinese research community articles
-- **Reddit API** - r/MachineLearning, r/science posts
-- **HackerNews API** - paper discussions
+- **Reddit API** (free, via PRAW) - r/MachineLearning, r/science, r/ArtificialIntelligence
+- **HackerNews API** (free) - paper discussions and trending research
+- **Twitter/X** (optional, requires paid API $100+/month) - research hashtags
+- **arXiv trackbacks** (free) - papers linking to arXiv
+- **GitHub trending** (free) - research repos and paper implementations
 
 ### 2. AI Analysis
 **LLM Integration (configurable):**
@@ -127,23 +126,35 @@ class JournalScraper:
         """Scrape latest papers from journal website"""
 ```
 
-**src/social/twitter.py**
+**src/social/reddit.py**
+```python
+class RedditFetcher:
+    def get_trending_papers(self, subreddits: List[str], min_upvotes: int) -> List[Post]:
+        """Fetch trending papers from subreddits using PRAW (free)"""
+```
+
+**src/social/hackernews.py**
+```python
+class HackerNewsFetcher:
+    def get_trending_papers(self, keywords: List[str], min_points: int) -> List[Story]:
+        """Fetch trending papers from HN (free API)"""
+```
+
+**src/social/github.py**
+```python
+class GitHubFetcher:
+    def get_trending_repos(self, topics: List[str]) -> List[Repo]:
+        """Fetch trending ML repos with paper implementations (free)"""
+
+    def get_arxiv_implementations(self, min_stars: int) -> List[Repo]:
+        """Find GitHub repos implementing arXiv papers"""
+```
+
+**src/social/twitter.py** (optional)
 ```python
 class TwitterFetcher:
-    def get_trending_papers(self, hashtags: List[str], users: List[str]) -> List[Tweet]
-```
-
-**src/social/linkedin.py**
-```python
-class LinkedInFetcher:
-    def get_posts(self, keywords: List[str], companies: List[str]) -> List[Post]
-```
-
-**src/social/wechat.py**
-```python
-class WeChatFetcher:
-    def get_articles(self, account_ids: List[str]) -> List[Article]:
-        """Fetch articles from WeChat public accounts"""
+    def get_trending_papers(self, hashtags: List[str]) -> List[Tweet]:
+        """Requires paid Twitter API access ($100+/month)"""
 ```
 
 ## Configuration
@@ -206,30 +217,35 @@ journals:
 
 **config/social.yaml**
 ```yaml
-twitter:
-  hashtags: ["#MachineLearning", "#AI", "#DeepLearning", "#NeurIPS", "#ICLR"]
-  track_users: ["ylecun", "goodfellow_ian", "karpathy"]
-
-linkedin:
-  track_keywords: ["AI research", "machine learning paper", "new publication"]
-  track_companies: ["DeepMind", "OpenAI", "Anthropic", "Meta AI"]
-
-wechat:
-  public_accounts:
-    - name: "机器之心"  # Machine Heart
-      account_id: "almosthuman2014"
-    - name: "AI科技评论"  # AI Tech Review
-      account_id: "aitechtalk"
-    - name: "新智元"  # AI Era
-      account_id: "AI_era"
-
+# Free sources (always enabled)
 reddit:
-  subreddits: ["MachineLearning", "deeplearning", "ArtificialIntelligence"]
+  enabled: true
+  subreddits:
+    - "MachineLearning"
+    - "deeplearning"
+    - "ArtificialIntelligence"
+    - "computervision"
+    - "LanguageTechnology"
   min_upvotes: 50
+  track_keywords: ["paper", "research", "arxiv"]
 
 hackernews:
-  keywords: ["paper", "research", "arxiv"]
+  enabled: true
+  keywords: ["paper", "research", "arxiv", "machine learning"]
   min_points: 100
+  check_interval_hours: 6
+
+github:
+  enabled: true
+  topics: ["machine-learning", "deep-learning", "artificial-intelligence"]
+  track_paper_implementations: true  # Repos with arXiv links
+  min_stars: 50
+
+# Optional paid sources
+twitter:
+  enabled: false  # Requires paid API ($100+/month)
+  hashtags: ["#MachineLearning", "#AI", "#DeepLearning", "#NeurIPS", "#ICLR"]
+  track_users: ["ylecun", "goodfellow_ian", "karpathy"]
 ```
 
 ## Docker Deployment
@@ -271,16 +287,14 @@ OLLAMA_HOST=http://localhost:11434
 SERPAPI_KEY=...
 SEMANTIC_SCHOLAR_KEY=...
 
-# Social Media
-TWITTER_API_KEY=...
-TWITTER_API_SECRET=...
-TWITTER_BEARER_TOKEN=...
-LINKEDIN_API_KEY=...
-LINKEDIN_API_SECRET=...
-WECHAT_APP_ID=...
-WECHAT_APP_SECRET=...
+# Social Media (Free APIs)
 REDDIT_CLIENT_ID=...
 REDDIT_CLIENT_SECRET=...
+REDDIT_USER_AGENT=ResearchPulse/1.0
+GITHUB_TOKEN=...  # Optional, increases rate limits
+
+# Optional Paid APIs
+TWITTER_BEARER_TOKEN=...  # Requires paid plan ($100+/month)
 
 # Journal Scraping (if needed)
 SPRINGER_API_KEY=...
@@ -326,7 +340,7 @@ docker run -p 8080:80 -v ./output:/usr/share/nginx/html nginx
    - Author publications (tracked authors)
    - Citation tracking (papers citing key works)
    - Journal websites (Nature, Science, etc.)
-2. **Collect social data** from Twitter/X, LinkedIn, WeChat, Reddit, HackerNews
+2. **Collect social data** from Reddit, HackerNews, GitHub (all free APIs)
 3. **Deduplicate & filter** papers
 4. **Analyze with LLM**: summarize, extract insights
 5. **Rank papers** by relevance + social buzz + author reputation
