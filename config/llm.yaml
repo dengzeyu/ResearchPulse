@@ -6,20 +6,24 @@ claude:
   model: claude-3-5-sonnet-20241022
   max_tokens: 2000
   temperature: 0.7
+  # base_url: https://api.anthropic.com  # Optional: Custom API endpoint
 
 openai:
   model: gpt-4-turbo-preview
   max_tokens: 2000
   temperature: 0.7
+  # base_url: https://api.openai.com/v1  # Optional: Custom API endpoint
 
 gemini:
   model: gemini-pro
   max_tokens: 2000
   temperature: 0.7
+  # base_url: https://generativelanguage.googleapis.com  # Optional: Custom API endpoint
 
 ollama:
   model: llama2
   temperature: 0.7
+  # base_url: http://localhost:11434  # Optional: Custom Ollama host
 
 # Analysis tasks to perform
 tasks:

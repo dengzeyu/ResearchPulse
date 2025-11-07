@@ -361,3 +361,117 @@ class TestLLMAnalyzer:
         assert 'contributions' in analysis
         assert analysis['summary'] == ''
         assert analysis['contributions'] == []
+
+    @patch.dict('os.environ', {'ANTHROPIC_API_KEY': 'test-key', 'ANTHROPIC_BASE_URL': 'https://custom.anthropic.com'})
+    @patch('analyzer.Anthropic')
+    def test_claude_custom_base_url_from_env(self, mock_anthropic, claude_config):
+        """Test Claude initialization with custom base URL from environment variable."""
+        analyzer = LLMAnalyzer(claude_config)
+
+        assert analyzer.provider == 'claude'
+        mock_anthropic.assert_called_once_with(api_key='test-key', base_url='https://custom.anthropic.com')
+
+    @patch.dict('os.environ', {'ANTHROPIC_API_KEY': 'test-key'})
+    @patch('analyzer.Anthropic')
+    def test_claude_custom_base_url_from_config(self, mock_anthropic):
+        """Test Claude initialization with custom base URL from config file."""
+        config = {
+            'provider': 'claude',
+            'claude': {
+                'model': 'claude-3-5-sonnet-20241022',
+                'base_url': 'https://config.anthropic.com'
+            }
+        }
+        analyzer = LLMAnalyzer(config)
+
+        assert analyzer.provider == 'claude'
+        mock_anthropic.assert_called_once_with(api_key='test-key', base_url='https://config.anthropic.com')
+
+    @patch.dict('os.environ', {'ANTHROPIC_API_KEY': 'test-key', 'ANTHROPIC_BASE_URL': 'https://env.anthropic.com'})
+    @patch('analyzer.Anthropic')
+    def test_claude_env_base_url_precedence(self, mock_anthropic):
+        """Test that environment variable takes precedence over config file for Claude."""
+        config = {
+            'provider': 'claude',
+            'claude': {
+                'model': 'claude-3-5-sonnet-20241022',
+                'base_url': 'https://config.anthropic.com'
+            }
+        }
+        analyzer = LLMAnalyzer(config)
+
+        assert analyzer.provider == 'claude'
+        # Environment variable should take precedence
+        mock_anthropic.assert_called_once_with(api_key='test-key', base_url='https://env.anthropic.com')
+
+    @patch.dict('os.environ', {'OPENAI_API_KEY': 'test-key', 'OPENAI_BASE_URL': 'https://custom.openai.com'})
+    @patch('analyzer.OpenAI')
+    def test_openai_custom_base_url_from_env(self, mock_openai, openai_config):
+        """Test OpenAI initialization with custom base URL from environment variable."""
+        analyzer = LLMAnalyzer(openai_config)
+
+        assert analyzer.provider == 'openai'
+        mock_openai.assert_called_once_with(api_key='test-key', base_url='https://custom.openai.com')
+
+    @patch.dict('os.environ', {'OPENAI_API_KEY': 'test-key'})
+    @patch('analyzer.OpenAI')
+    def test_openai_custom_base_url_from_config(self, mock_openai):
+        """Test OpenAI initialization with custom base URL from config file."""
+        config = {
+            'provider': 'openai',
+            'openai': {
+                'model': 'gpt-4-turbo-preview',
+                'base_url': 'https://config.openai.com'
+            }
+        }
+        analyzer = LLMAnalyzer(config)
+
+        assert analyzer.provider == 'openai'
+        mock_openai.assert_called_once_with(api_key='test-key', base_url='https://config.openai.com')
+
+    @patch.dict('os.environ', {'OPENAI_API_KEY': 'test-key', 'OPENAI_BASE_URL': 'https://env.openai.com'})
+    @patch('analyzer.OpenAI')
+    def test_openai_env_base_url_precedence(self, mock_openai):
+        """Test that environment variable takes precedence over config file for OpenAI."""
+        config = {
+            'provider': 'openai',
+            'openai': {
+                'model': 'gpt-4-turbo-preview',
+                'base_url': 'https://config.openai.com'
+            }
+        }
+        analyzer = LLMAnalyzer(config)
+
+        assert analyzer.provider == 'openai'
+        # Environment variable should take precedence
+        mock_openai.assert_called_once_with(api_key='test-key', base_url='https://env.openai.com')
+
+    def test_ollama_custom_base_url_from_config(self):
+        """Test Ollama initialization with custom base URL from config file."""
+        config = {
+            'provider': 'ollama',
+            'ollama': {
+                'model': 'llama2',
+                'base_url': 'http://custom.ollama.host:11434'
+            }
+        }
+        analyzer = LLMAnalyzer(config)
+
+        assert analyzer.provider == 'ollama'
+        assert analyzer.ollama_host == 'http://custom.ollama.host:11434'
+
+    @patch.dict('os.environ', {'OLLAMA_HOST': 'http://env.ollama.host:11434'})
+    def test_ollama_env_precedence_over_config(self):
+        """Test that OLLAMA_HOST environment variable takes precedence over config."""
+        config = {
+            'provider': 'ollama',
+            'ollama': {
+                'model': 'llama2',
+                'base_url': 'http://config.ollama.host:11434'
+            }
+        }
+        analyzer = LLMAnalyzer(config)
+
+        assert analyzer.provider == 'ollama'
+        # Environment variable should take precedence
+        assert analyzer.ollama_host == 'http://env.ollama.host:11434'
