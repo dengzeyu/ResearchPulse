@@ -1,51 +1,41 @@
-# Core dependencies
-python-dotenv==1.0.0
-pyyaml==6.0.1
-requests==2.31.0
-beautifulsoup4==4.12.2
-lxml==4.9.3
+# This file is maintained for backwards compatibility.
+#
+# The project now uses pyproject.toml as the source of truth for dependencies.
+#
+# To install ResearchPulse:
+#   pip install -e .
+#
+# To install with development/testing dependencies:
+#   pip install -e ".[dev]"
+#   pip install -e ".[test]"
+#
+# If you need a traditional requirements.txt, generate it with:
+#   pip install pip-tools
+#   pip-compile pyproject.toml
 
-# LLM Providers
-anthropic==0.18.1
-openai==1.12.0
-google-generativeai==0.3.2
-
-# Paper sources
-arxiv==2.1.0
-scholarly==1.7.11
-semanticscholar==0.5.0
-
-# Social media
-praw==7.7.1  # Reddit
-PyGithub==2.1.1
-
-# Google Custom Search
-google-api-python-client==2.116.0
-
-# Web scraping & HTTP
-httpx==0.26.0
-aiohttp==3.9.3
-
-# Data processing
-pandas==2.1.4
-numpy==1.26.3
-
-# HTML/Markdown generation
-jinja2==3.1.3
-markdown==3.5.2
-python-dateutil==2.8.2
-
-# Utilities
-schedule==1.2.1
-tqdm==4.66.1
-colorlog==6.8.2
-
-# NLP utilities (for text processing)
-nltk==3.8.1
-
-# Testing dependencies
-pytest==7.4.4
-pytest-mock==3.12.0
-pytest-cov==4.1.0
-responses==0.24.1
-freezegun==1.4.0
+# For direct installation without pyproject.toml, install these:
+python-dotenv>=1.0.0
+pyyaml>=6.0.1
+requests>=2.31.0
+beautifulsoup4>=4.12.2
+lxml>=4.9.3
+anthropic>=0.18.1
+openai>=1.12.0
+google-generativeai>=0.3.2
+arxiv>=2.1.0
+scholarly>=1.7.11
+semanticscholar>=0.5.0
+praw>=7.7.1
+PyGithub>=2.1.1
+google-api-python-client>=2.116.0
+httpx>=0.26.0
+aiohttp>=3.9.3
+pandas>=2.1.4
+numpy>=1.26.3
+jinja2>=3.1.3
+markdown>=3.5.2
+python-dateutil>=2.8.2
+schedule>=1.2.1
+tqdm>=4.66.1
+colorlog>=6.8.2
+nltk>=3.8.1

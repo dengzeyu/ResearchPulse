@@ -53,7 +53,11 @@ Comprehensive unit tests for the ResearchPulse project.
 
 ### Install Dependencies
 ```bash
-pip install -r requirements.txt
+# Install with test dependencies
+pip install -e ".[test]"
+
+# Or install all dev dependencies
+pip install -e ".[dev]"
 ```
 
 ### Run All Tests
