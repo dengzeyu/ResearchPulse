@@ -1,6 +1,6 @@
-# Paper Feed
+# ResearchPulse
 
-AI-powered research paper aggregator that generates daily insights, research ideas, and trending topics. Runs as a Docker container and publishes to a static blog.
+AI-powered research paper aggregator that captures the pulse of scientific research. Generates daily insights, research ideas, and trending topics. Runs as a Docker container and publishes to a stylish static blog.
 
 ## Core Structure
 
@@ -247,7 +247,7 @@ CMD ["python", "main.py"]
 **docker-compose.yml**
 ```yaml
 services:
-  paper-feed:
+  research-pulse:
     build: .
     env_file:
       - .env
@@ -313,7 +313,7 @@ docker-compose build
 docker-compose up -d
 
 # 5. View logs
-docker logs -f paper-feed
+docker logs -f research-pulse
 
 # 6. Serve static output
 docker run -p 8080:80 -v ./output:/usr/share/nginx/html nginx
@@ -338,7 +338,7 @@ docker run -p 8080:80 -v ./output:/usr/share/nginx/html nginx
 
 **Daily Feed Page:**
 ```
-📅 Research Feed - Nov 7, 2024
+📅 ResearchPulse - Nov 7, 2024
 
 🔥 Hot Topics
 - Multimodal LLMs for vision-language tasks
