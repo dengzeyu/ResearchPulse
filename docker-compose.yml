@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  research-pulse:
+    build: .
+    container_name: research-pulse
+    env_file:
+      - .env
+    volumes:
+      - ./output:/app/output
+      - ./config:/app/config
+      - ./logs:/app/logs
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - TIMEZONE=${TIMEZONE:-UTC}
+
+  # Optional: Nginx to serve static site
+  nginx:
+    image: nginx:alpine
+    container_name: research-pulse-nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./output:/usr/share/nginx/html:ro
+    restart: unless-stopped
+    depends_on:
+      - research-pulse

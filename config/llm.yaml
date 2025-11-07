@@ -1,0 +1,50 @@
+# LLM Configuration
+provider: claude  # Options: claude, openai, gemini, ollama
+
+# Provider-specific settings
+claude:
+  model: claude-3-5-sonnet-20241022
+  max_tokens: 2000
+  temperature: 0.7
+
+openai:
+  model: gpt-4-turbo-preview
+  max_tokens: 2000
+  temperature: 0.7
+
+gemini:
+  model: gemini-pro
+  max_tokens: 2000
+  temperature: 0.7
+
+ollama:
+  model: llama2
+  temperature: 0.7
+
+# Analysis tasks to perform
+tasks:
+  summarization: true
+  key_contributions: true
+  research_ideas: true
+  hot_topics: true
+
+# Research ideas generation
+research_ideas:
+  count: 5  # Generate 5 ideas per day
+  prompt: |
+    Based on today's papers, suggest novel research directions that:
+    1. Combine insights from multiple papers
+    2. Address limitations mentioned in the papers
+    3. Are technically feasible within 6-12 months
+    4. Have potential for high impact
+
+# Hot topics detection
+hot_topics:
+  count: 3  # Top 3 trending topics
+  min_papers: 3  # Minimum papers to qualify as a trend
+  prompt: |
+    Identify emerging trends and hot topics from today's papers.
+    Look for:
+    1. Multiple papers addressing similar problems
+    2. Novel techniques appearing in different contexts
+    3. Paradigm shifts or new methodologies
