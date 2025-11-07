@@ -1,289 +1,119 @@
 # ResearchPulse
 
-AI-powered research paper aggregator that captures the pulse of scientific research. Generates daily insights, research ideas, and trending topics. Runs as a Docker container and publishes to a stylish static blog.
+AI-powered research paper aggregator with LLM analysis, social buzz tracking, and daily insights generation. Runs as Docker container, outputs static blog.
 
-## Core Structure
+## Project Structure
 
 ```
-/
-├── src/
-│   ├── fetchers/
-│   │   ├── arxiv.py       # arXiv API
-│   │   ├── scholar.py     # Google Scholar
-│   │   ├── semantic.py    # Semantic Scholar
-│   │   ├── pubmed.py      # PubMed
-│   │   ├── author.py      # Track specific authors
-│   │   ├── citations.py   # Track paper citations
-│   │   └── journals.py    # Scrape journal websites
-│   ├── social/
-│   │   ├── reddit.py      # Reddit API (free via PRAW)
-│   │   ├── hackernews.py  # HackerNews API (free)
-│   │   ├── github.py      # GitHub trending (free)
-│   │   └── google_search.py  # Google Custom Search (100 free/day)
-│   ├── analyzer.py        # LLM-powered paper analysis
-│   ├── insights.py        # Generate research ideas & hot topics
-│   ├── processor.py       # Filter, rank, deduplicate papers
-│   └── generator.py       # Static site generation
-├── templates/
-│   ├── index.html         # Blog homepage template
-│   ├── daily.html         # Daily feed page template
-│   └── paper.html         # Individual paper card
-├── config/
-│   ├── tracking.yaml      # Keywords, authors, papers, journals to track
-│   ├── llm.yaml           # LLM provider configs
-│   └── social.yaml        # Social media configs
-├── output/                # Generated static site
-├── .env                   # API keys and secrets
-├── .env.example           # Example configuration
-├── Dockerfile
-└── docker-compose.yml
+src/
+├── fetchers/      # Paper sources: arXiv, Scholar, Semantic Scholar, PubMed, journals, authors, citations
+├── social/        # Social signals: Reddit, HackerNews, GitHub, Google Custom Search
+├── analyzer.py    # LLM analysis (Claude/GPT-4/Gemini/Ollama)
+├── insights.py    # Generate research ideas & hot topics
+├── processor.py   # Filter, rank, deduplicate
+└── generator.py   # Static site generation
+
+config/
+├── tracking.yaml  # Keywords, authors, papers, journals
+├── llm.yaml       # LLM provider settings
+└── social.yaml    # Social media sources
+
+templates/         # HTML templates for static site
+output/            # Generated blog
 ```
 
-## Architecture
+## Data Pipeline
+
+**1. Collect** → **2. Analyze** → **3. Generate**
 
 ### 1. Paper Collection
-**Academic Sources:**
-- arXiv API
-- Google Scholar (via `scholarly` or SerpAPI)
-- Semantic Scholar API
-- PubMed API
 
-**Social Signals:**
-- **Reddit API** (free, via PRAW) - r/MachineLearning, r/science, r/ArtificialIntelligence
-- **HackerNews API** (free) - paper discussions and trending research
-- **GitHub API** (free) - research repos and paper implementations
-- **Google Custom Search** (100 free queries/day, then $5/1000 queries) - Search public content on:
-  - LinkedIn posts: `site:linkedin.com "machine learning paper" OR "arxiv"`
-  - Twitter/X posts: `site:twitter.com OR site:x.com "arxiv.org"`
-  - Medium articles: `site:medium.com "research paper"`
-  - Any publicly indexed research discussions
+**Academic Sources** (API-based):
+- arXiv, Google Scholar, Semantic Scholar, PubMed
+- Track: keywords, specific authors, citations, journal websites
 
-### 2. AI Analysis
-**LLM Integration (configurable):**
-- **Claude** (Anthropic API)
-- **GPT-4** (OpenAI API)
-- **Gemini** (Google API)
-- **Ollama** (local models)
+**Social Signals** (all free):
+- Reddit (PRAW), HackerNews, GitHub trending
+- Google Custom Search: LinkedIn/Twitter/Medium (100 free queries/day)
 
-**Analysis Tasks:**
-- Summarize papers (3-5 sentences)
-- Extract key contributions
-- Identify methodology & results
-- Generate research ideas (5 per day)
-- Detect hot topics & trends
+### 2. LLM Analysis
 
-### 3. Static Site Generation
-**Output:** Stylish blog-style static website
-- Daily feed pages
-- Paper cards with AI summaries
-- Research ideas section
-- Trending topics dashboard
-- Social buzz indicators
+**Providers**: Claude, GPT-4, Gemini, Ollama (configurable)
 
-## Key Components
+**Tasks**: Summarize papers → Extract contributions → Generate 5 research ideas → Identify hot topics
 
-**src/analyzer.py**
-```python
-class LLMAnalyzer:
-    def __init__(self, provider: str = "claude")  # claude|openai|gemini|ollama
+### 3. Static Site Output
 
-    def summarize_paper(self, paper: Paper) -> str
-    def extract_contributions(self, paper: Paper) -> List[str]
-    def generate_research_ideas(self, papers: List[Paper]) -> List[str]
-    def identify_hot_topics(self, papers: List[Paper]) -> List[Topic]
-```
-
-**src/insights.py**
-```python
-def generate_daily_insights(papers: List[Paper], social_data: dict) -> Insights:
-    """Generate 5 research ideas and hot topics"""
-
-def rank_by_social_buzz(papers: List[Paper], social_data: dict) -> List[Paper]:
-    """Rank papers by social media mentions"""
-```
-
-**src/generator.py**
-```python
-def generate_static_site(feed: DailyFeed, output_dir: str):
-    """Generate static HTML/CSS/JS blog"""
-```
-
-**src/fetchers/author.py**
-```python
-class AuthorTracker:
-    def fetch_author_papers(self, author: str, days: int) -> List[Paper]:
-        """Fetch recent papers by specific author"""
-```
-
-**src/fetchers/citations.py**
-```python
-class CitationTracker:
-    def fetch_citing_papers(self, arxiv_id: str, days: int) -> List[Paper]:
-        """Fetch papers citing a key paper"""
-```
-
-**src/fetchers/journals.py**
-```python
-class JournalScraper:
-    def fetch_journal_papers(self, journal_url: str, sections: List[str]) -> List[Paper]:
-        """Scrape latest papers from journal website"""
-```
-
-**src/social/reddit.py**
-```python
-class RedditFetcher:
-    def get_trending_papers(self, subreddits: List[str], min_upvotes: int) -> List[Post]:
-        """Fetch trending papers from subreddits using PRAW (free)"""
-```
-
-**src/social/hackernews.py**
-```python
-class HackerNewsFetcher:
-    def get_trending_papers(self, keywords: List[str], min_points: int) -> List[Story]:
-        """Fetch trending papers from HN (free API)"""
-```
-
-**src/social/github.py**
-```python
-class GitHubFetcher:
-    def get_trending_repos(self, topics: List[str]) -> List[Repo]:
-        """Fetch trending ML repos with paper implementations (free)"""
-
-    def get_arxiv_implementations(self, min_stars: int) -> List[Repo]:
-        """Find GitHub repos implementing arXiv papers"""
-```
-
-**src/social/google_search.py**
-```python
-class GoogleSearchFetcher:
-    def search_site(self, site: str, query: str, days: int = 7) -> List[Result]:
-        """Search specific site using Google Custom Search API
-
-        Examples:
-        - search_site("linkedin.com", "machine learning paper arxiv")
-        - search_site("twitter.com", "arxiv.org/abs")
-        - search_site("medium.com", "research paper")
-        """
-
-    def search_multiple_sites(self, sites: List[str], query: str) -> List[Result]:
-        """Search across multiple sites: site:linkedin.com OR site:twitter.com"""
-```
+Blog with: Daily feed | Paper cards (AI summaries) | Research ideas | Hot topics | Social buzz
 
 ## Configuration
 
-**config/llm.yaml**
+**config/tracking.yaml** - What to track
+```yaml
+keywords:
+  - area: "Machine Learning"
+    terms: ["transformers", "LLMs", "diffusion models"]
+    sources: ["arxiv", "google_scholar"]
+
+authors:
+  - name: "Yoshua Bengio"
+  - name: "Geoffrey Hinton"
+
+key_papers:  # Track citations
+  - title: "Attention Is All You Need"
+    arxiv_id: "1706.03762"
+
+journals:
+  - name: "Nature"
+  - name: "Science"
+```
+
+**config/social.yaml** - Social sources
+```yaml
+reddit:
+  subreddits: ["MachineLearning", "deeplearning"]
+  min_upvotes: 50
+
+github:
+  topics: ["machine-learning", "deep-learning"]
+  track_paper_implementations: true
+
+google_search:  # 100 free/day
+  search_targets:
+    - site: "linkedin.com"
+      queries: ["machine learning paper", "arxiv.org"]
+    - site: "twitter.com OR site:x.com"
+      queries: ["arxiv.org/abs"]
+```
+
+**config/llm.yaml** - AI provider
 ```yaml
 provider: claude  # claude|openai|gemini|ollama
-models:
-  claude: claude-3-5-sonnet-20241022
-  openai: gpt-4-turbo
-  gemini: gemini-pro
-  ollama: llama3.1:8b
 tasks:
   summarization: true
   research_ideas: true
   hot_topics: true
 ```
 
-**config/tracking.yaml**
-```yaml
-# Track by keywords
-keywords:
-  - area: "Machine Learning"
-    terms: ["neural networks", "transformers", "LLMs", "diffusion models"]
-    sources: ["arxiv", "google_scholar", "semantic_scholar"]
-  - area: "Quantum Computing"
-    terms: ["quantum algorithms", "qubits", "quantum error correction"]
-    sources: ["arxiv", "nature", "science"]
+## Environment Setup
 
-# Track specific authors
-authors:
-  - name: "Yoshua Bengio"
-    affiliations: ["Mila", "University of Montreal"]
-  - name: "Geoffrey Hinton"
-    affiliations: ["Google", "University of Toronto"]
-  - name: "Yann LeCun"
-    affiliations: ["Meta", "NYU"]
+**.env** (API keys - never commit!)
+```bash
+# LLM (choose one)
+ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=sk-...
+OLLAMA_HOST=http://localhost:11434
 
-# Track papers citing these influential works
-key_papers:
-  - title: "Attention Is All You Need"
-    arxiv_id: "1706.03762"
-    track_citations: true
-  - title: "BERT: Pre-training of Deep Bidirectional Transformers"
-    arxiv_id: "1810.04805"
-    track_citations: true
+# Paper sources (optional)
+SERPAPI_KEY=...                    # Google Scholar
+SEMANTIC_SCHOLAR_KEY=...
 
-# Track specific journals
-journals:
-  - name: "Nature"
-    url: "https://www.nature.com"
-    sections: ["articles", "letters"]
-  - name: "Science"
-    url: "https://www.science.org"
-  - name: "Nature Machine Intelligence"
-    url: "https://www.nature.com/natmachintell"
-  - name: "JMLR"
-    url: "https://jmlr.org"
-```
-
-**config/social.yaml**
-```yaml
-# Free sources (always enabled)
-reddit:
-  enabled: true
-  subreddits:
-    - "MachineLearning"
-    - "deeplearning"
-    - "ArtificialIntelligence"
-    - "computervision"
-    - "LanguageTechnology"
-  min_upvotes: 50
-  track_keywords: ["paper", "research", "arxiv"]
-
-hackernews:
-  enabled: true
-  keywords: ["paper", "research", "arxiv", "machine learning"]
-  min_points: 100
-  check_interval_hours: 6
-
-github:
-  enabled: true
-  topics: ["machine-learning", "deep-learning", "artificial-intelligence"]
-  track_paper_implementations: true  # Repos with arXiv links
-  min_stars: 50
-
-# Google Custom Search (100 free queries/day, then $5/1000)
-google_search:
-  enabled: true
-  daily_query_limit: 100  # Free tier limit
-  search_targets:
-    - site: "linkedin.com"
-      queries:
-        - "machine learning paper"
-        - "arxiv.org"
-        - "new research"
-    - site: "twitter.com OR site:x.com"
-      queries:
-        - "arxiv.org/abs"
-        - "#MachineLearning arxiv"
-    - site: "medium.com"
-      queries:
-        - "research paper"
-        - "paper review"
-  date_filter: "week"  # Recent content only
-```
-
-## Docker Deployment
-
-**Dockerfile**
-```dockerfile
-FROM python:3.11-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-COPY . .
-CMD ["python", "main.py"]
+# Social (free)
+REDDIT_CLIENT_ID=...
+REDDIT_CLIENT_SECRET=...
+GITHUB_TOKEN=...                   # Optional, higher rate limits
+GOOGLE_SEARCH_API_KEY=...          # 100 free/day
+GOOGLE_SEARCH_ENGINE_ID=...
 ```
 
 **docker-compose.yml**
@@ -291,116 +121,40 @@ CMD ["python", "main.py"]
 services:
   research-pulse:
     build: .
-    env_file:
-      - .env
+    env_file: .env
     volumes:
       - ./output:/app/output
       - ./config:/app/config
-    restart: always
 ```
 
-## Configuration Files
-
-**.env** (API keys and secrets)
-```bash
-# LLM APIs (choose one or more)
-ANTHROPIC_API_KEY=sk-ant-...
-OPENAI_API_KEY=sk-...
-GOOGLE_API_KEY=...
-OLLAMA_HOST=http://localhost:11434
-
-# Paper Sources
-SERPAPI_KEY=...
-SEMANTIC_SCHOLAR_KEY=...
-
-# Social Media (Free APIs)
-REDDIT_CLIENT_ID=...
-REDDIT_CLIENT_SECRET=...
-REDDIT_USER_AGENT=ResearchPulse/1.0
-GITHUB_TOKEN=...  # Optional, increases rate limits
-
-# Google Custom Search (100 free queries/day)
-GOOGLE_SEARCH_API_KEY=...
-GOOGLE_SEARCH_ENGINE_ID=...  # Create at https://programmablesearchengine.google.com/
-
-# Journal Scraping (if needed)
-SPRINGER_API_KEY=...
-ELSEVIER_API_KEY=...
-```
-
-**.env.example** (Template for users)
-```bash
-# Copy this to .env and fill in your keys
-ANTHROPIC_API_KEY=
-OPENAI_API_KEY=
-SERPAPI_KEY=
-# ... (all keys with empty values)
-```
-
-## Deployment
+## Quick Start
 
 ```bash
-# 1. Setup environment
-cp .env.example .env
-# Edit .env with your API keys
+# 1. Setup
+cp .env.example .env          # Add your API keys
+nano config/tracking.yaml     # Configure what to track
 
-# 2. Configure tracking
-# Edit config/tracking.yaml with your keywords, authors, papers, journals
+# 2. Run
+docker-compose up -d          # Start container
+docker logs -f research-pulse # View logs
 
-# 3. Build container
-docker-compose build
-
-# 4. Run container
-docker-compose up -d
-
-# 5. View logs
-docker logs -f research-pulse
-
-# 6. Serve static output
-docker run -p 8080:80 -v ./output:/usr/share/nginx/html nginx
+# 3. Deploy
+# Static site in ./output ready for nginx/GitHub Pages
 ```
 
-## Daily Workflow
+## Daily Pipeline
 
-1. **Fetch papers** from multiple sources:
-   - Keyword searches (arXiv, Google Scholar, Semantic Scholar, PubMed)
-   - Author publications (tracked authors)
-   - Citation tracking (papers citing key works)
-   - Journal websites (Nature, Science, etc.)
-2. **Collect social data** from Reddit, HackerNews, GitHub, Google Custom Search (all free tier available)
-3. **Deduplicate & filter** papers
-4. **Analyze with LLM**: summarize, extract insights
-5. **Rank papers** by relevance + social buzz + author reputation
-6. **Generate insights**: 5 research ideas + hot topics
-7. **Build static site** with styled templates
-8. **Deploy to server** (nginx/GitHub Pages)
+Fetch (keywords/authors/citations/journals + social buzz) → Deduplicate → LLM analyze → Rank by relevance+buzz → Generate insights → Build static site
 
-## Output Example
+**Output**: `output/YYYY-MM-DD/index.html`
+- Hot topics (LLM-identified trends)
+- 5 research ideas (LLM-generated)
+- Ranked papers with AI summaries
+- Social buzz indicators
 
-**Daily Feed Page:**
-```
-📅 ResearchPulse - Nov 7, 2024
+## Notes
 
-🔥 Hot Topics
-- Multimodal LLMs for vision-language tasks
-- Quantum error correction breakthroughs
-- AI safety alignment research
-
-💡 Research Ideas
-1. Combining RL with diffusion models for robotics
-2. Cross-lingual reasoning in small language models
-...
-
-📄 Papers (Ranked by Relevance + Buzz)
-[Paper Card: Title, Authors, Summary, Social Mentions, ArXiv Link]
-```
-
-## Security
-
-- Store all API keys in `.env` file (never commit to git)
-- Add `.env` to `.gitignore`
-- Use `.env.example` as template (no real keys)
-- Use read-only volumes for config in Docker
-- Rate limit API calls to avoid abuse
-- Validate and sanitize external data
-- Run container as non-root user
+- All API keys in `.env` (never commit!)
+- Free tier: 100 Google searches/day, unlimited Reddit/HN/GitHub
+- LLM costs vary: Claude/GPT-4 ~$0.01-0.10 per paper analyzed
+- Static output = deploy anywhere (nginx, GitHub Pages, S3)
