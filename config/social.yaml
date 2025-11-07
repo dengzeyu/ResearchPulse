@@ -2,7 +2,7 @@
 
 # Reddit (using PRAW - free)
 reddit:
-  enabled: true
+  enabled: false
   subreddits:
     - "MachineLearning"
     - "deeplearning"
@@ -15,7 +15,7 @@ reddit:
 
 # HackerNews (free API)
 hackernews:
-  enabled: true
+  enabled: false
   min_score: 50
   keywords:
     - "arxiv"
@@ -26,7 +26,7 @@ hackernews:
 
 # GitHub (free API, optional token for higher limits)
 github:
-  enabled: true
+  enabled: false
   trending:
     languages: ["python", "jupyter-notebook"]
     since: "daily"
@@ -40,7 +40,7 @@ github:
 
 # Google Custom Search (100 free queries/day)
 google_search:
-  enabled: true
+  enabled: false
   daily_query_limit: 80  # Leave some buffer
   search_targets:
     - site: "linkedin.com"

@@ -1,76 +1,118 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ResearchPulse - {{ date|datetime('%B %d, %Y') }}</title>
+    <title>ResearchPulse — {{ date.strftime('%B %d, %Y') }}</title>
     <link rel="stylesheet" href="../static/style.css">
 </head>
 <body>
-    <header>
-        <div class="container">
-            <h1>ResearchPulse</h1>
-            <p class="tagline">AI-powered research paper feed</p>
-            <p class="date">{{ date|datetime('%B %d, %Y') }}</p>
+    <!-- Fixed Navigation -->
+    <nav class="nav">
+        <div class="nav-content">
+            <a href="../index.html" class="nav-brand">ResearchPulse</a>
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                <span class="theme-icon">☾</span>
+            </button>
         </div>
-    </header>
+    </nav>
 
-    <main class="container">
-        <!-- Hot Topics Section -->
+    <!-- Header -->
+    <div class="wrapper">
+        <header class="header">
+            <h1>{{ date.strftime('%B %d, %Y') }}</h1>
+            <p class="description">AI-analyzed research papers</p>
+            <p class="date">{{ date.strftime('%A') }}</p>
+        </header>
+
+        <!-- Date Navigation -->
+        <div class="date-nav">
+            <div class="date-nav-content">
+                <button class="nav-btn" id="prevDay" onclick="navigateDate('prev')">← Previous</button>
+                <span class="current-date">{{ date.strftime('%b %d') }}</span>
+                <button class="nav-btn" id="nextDay" onclick="navigateDate('next')" disabled>Next →</button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value">{{ total_papers }}</div>
+                <div class="stat-label">Papers</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">{{ hot_topics|length }}</div>
+                <div class="stat-label">Topics</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">{{ research_ideas|length }}</div>
+                <div class="stat-label">Ideas</div>
+            </div>
+        </div>
+
+        <div class="separator">• • •</div>
+
+        <!-- Hot Topics -->
         {% if hot_topics %}
-        <section class="hot-topics">
-            <h2>🔥 Hot Topics</h2>
-            <div class="topics-grid">
+        <section class="section">
+            <h2 class="section-title">Hot Topics</h2>
+            <div class="topics-list">
                 {% for topic in hot_topics %}
-                <div class="topic-card">
+                <article class="topic">
                     <h3>{{ topic.name }}</h3>
-                    <p>{{ topic.summary }}</p>
+                    <p class="topic-summary">{{ topic.summary }}</p>
                     {% if topic.evidence %}
-                    <p class="evidence">{{ topic.evidence }}</p>
+                    <p class="topic-evidence">{{ topic.evidence }}</p>
                     {% endif %}
-                </div>
+                </article>
                 {% endfor %}
             </div>
         </section>
+
+        <div class="separator">• • •</div>
         {% endif %}
 
-        <!-- Research Ideas Section -->
+        <!-- Research Ideas -->
         {% if research_ideas %}
-        <section class="research-ideas">
-            <h2>💡 Research Ideas</h2>
+        <section class="section">
+            <h2 class="section-title">Research Ideas</h2>
             <div class="ideas-list">
                 {% for idea in research_ideas %}
-                <div class="idea-card">
+                <article class="idea">
                     <h3>{{ idea.title }}</h3>
                     {% if idea.description %}
-                    <p><strong>Description:</strong> {{ idea.description }}</p>
+                    <p class="idea-description">{{ idea.description }}</p>
+                    {% endif %}
+                    {% if idea.reasoning %}
+                    <p class="idea-reasoning"><strong>Why this makes sense:</strong> {{ idea.reasoning }}</p>
                     {% endif %}
                     {% if idea.impact %}
-                    <p><strong>Why it matters:</strong> {{ idea.impact }}</p>
+                    <div class="idea-impact"><strong>Potential impact:</strong> {{ idea.impact }}</div>
                     {% endif %}
-                </div>
+                </article>
                 {% endfor %}
             </div>
         </section>
+
+        <div class="separator">• • •</div>
         {% endif %}
 
-        <!-- Papers Section -->
-        <section class="papers">
-            <h2>📚 Papers ({{ total_papers }})</h2>
+        <!-- Papers -->
+        <section class="section">
+            <h2 class="section-title">Papers</h2>
+            {% if papers %}
             <div class="papers-list">
                 {% for paper in papers %}
-                <article class="paper-card">
-                    <div class="paper-header">
-                        <h3>
-                            <a href="{{ paper.url }}" target="_blank">{{ paper.title }}</a>
-                        </h3>
-                        <div class="paper-meta">
-                            <span class="source">{{ paper.source }}</span>
-                            <span class="date">{{ paper.published_date|datetime('%Y-%m-%d') }}</span>
-                            {% if paper.citations > 0 %}
-                            <span class="citations">{{ paper.citations }} citations</span>
-                            {% endif %}
-                        </div>
+                <article class="paper">
+                    <h3 class="paper-title">
+                        <a href="{{ paper.url }}" target="_blank" rel="noopener">{{ paper.title }}</a>
+                    </h3>
+
+                    <div class="paper-meta">
+                        <span>{{ paper.published_date.strftime('%b %d, %Y') }}</span>
+                        {% if paper.source %}<span>{{ paper.source }}</span>{% endif %}
+                        {% if paper.citations %}<span>{{ paper.citations }} citations</span>{% endif %}
+                        {% if paper.arxiv_id %}<span>arXiv:{{ paper.arxiv_id }}</span>{% endif %}
                     </div>
 
                     <div class="paper-authors">
@@ -78,18 +120,14 @@
                     </div>
 
                     {% if paper.summary %}
-                    <div class="paper-summary">
-                        <strong>Summary:</strong> {{ paper.summary }}
-                    </div>
-                    {% else %}
-                    <div class="paper-abstract">
-                        {{ paper.abstract[:300] }}{% if paper.abstract|length > 300 %}...{% endif %}
-                    </div>
+                    <div class="paper-summary">{{ paper.summary }}</div>
+                    {% elif paper.abstract %}
+                    <div class="paper-abstract">{{ paper.abstract[:400] }}{% if paper.abstract|length > 400 %}...{% endif %}</div>
                     {% endif %}
 
                     {% if paper.contributions %}
                     <div class="paper-contributions">
-                        <strong>Key Contributions:</strong>
+                        <strong>Key Contributions</strong>
                         <ul>
                             {% for contribution in paper.contributions %}
                             <li>{{ contribution }}</li>
@@ -98,45 +136,50 @@
                     </div>
                     {% endif %}
 
-                    <div class="paper-footer">
-                        <div class="paper-links">
-                            <a href="{{ paper.url }}" target="_blank">View Paper</a>
-                            {% if paper.pdf_url %}
-                            | <a href="{{ paper.pdf_url }}" target="_blank">PDF</a>
-                            {% endif %}
-                            {% if paper.arxiv_id %}
-                            | <span class="arxiv-id">arXiv:{{ paper.arxiv_id }}</span>
-                            {% endif %}
-                        </div>
-
-                        {% if paper.social_score > 0 %}
-                        <div class="social-signals">
-                            <span class="social-score">🔥 {{ paper.social_score|round(1) }}</span>
-
-                            {% if paper.social_signals %}
-                                {% if paper.social_signals.reddit %}
-                                <span title="Reddit">🔴 {{ paper.social_signals.reddit.total_score }}</span>
-                                {% endif %}
-                                {% if paper.social_signals.hackernews %}
-                                <span title="HackerNews">🟠 {{ paper.social_signals.hackernews.total_score }}</span>
-                                {% endif %}
-                                {% if paper.social_signals.github %}
-                                <span title="GitHub">⭐ {{ paper.social_signals.github.total_stars }}</span>
-                                {% endif %}
-                            {% endif %}
-                        </div>
+                    <div class="paper-links">
+                        <a href="{{ paper.url }}" class="paper-link" target="_blank" rel="noopener">Read →</a>
+                        {% if paper.pdf_url %}
+                        <a href="{{ paper.pdf_url }}" class="paper-link" target="_blank" rel="noopener">PDF →</a>
                         {% endif %}
                     </div>
                 </article>
                 {% endfor %}
             </div>
+            {% else %}
+            <div class="empty-state">
+                <h3>No papers available</h3>
+                <p>Check back later for new research.</p>
+            </div>
+            {% endif %}
         </section>
-    </main>
 
-    <footer>
-        <div class="container">
-            <p>Generated by ResearchPulse | <a href="data.json">JSON Data</a> | <a href="../index.html">Home</a></p>
-        </div>
-    </footer>
+        <!-- Footer -->
+        <footer class="footer">
+            <p>ResearchPulse — AI-powered research analysis</p>
+            <p><a href="https://github.com/dengzeyu/ResearchPulse" target="_blank" rel="noopener">GitHub</a></p>
+        </footer>
+    </div>
+
+    <script src="../static/script.js"></script>
+    <script>
+        const currentDate = new Date('{{ date.strftime('%Y-%m-%d') }}');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (currentDate >= today) {
+            document.getElementById('nextDay').disabled = true;
+        }
+
+        function navigateDate(direction) {
+            const newDate = new Date(currentDate);
+            if (direction === 'prev') {
+                newDate.setDate(newDate.getDate() - 1);
+            } else {
+                newDate.setDate(newDate.getDate() + 1);
+            }
+            const dateStr = newDate.toISOString().split('T')[0];
+            window.location.href = `../${dateStr}/index.html`;
+        }
+    </script>
 </body>
 </html>

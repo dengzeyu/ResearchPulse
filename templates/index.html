@@ -1,16 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ site_title }} - AI-Powered Research Feed</title>
+    <title>ResearchPulse - AI-Powered Research Paper Analysis</title>
     <meta http-equiv="refresh" content="0; url=./{{ latest_date }}/index.html">
     <link rel="stylesheet" href="static/style.css">
+    <meta name="description" content="AI-powered research paper analysis and insights">
 </head>
 <body>
-    <div class="container">
-        <h1>{{ site_title }}</h1>
-        <p>Redirecting to latest feed: <a href="./{{ latest_date }}/index.html">{{ latest_date }}</a></p>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="index.html" class="navbar-brand">
+                <div class="logo">📊</div>
+                <span class="brand-name">ResearchPulse</span>
+            </a>
+            <div class="navbar-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <span class="theme-icon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero">
+        <div class="container hero-content">
+            <h1>Research Pulse</h1>
+            <p class="hero-subtitle">AI-Powered Research Paper Analysis & Insights</p>
+            <p class="hero-date">
+                <span>🚀</span>
+                <span>Redirecting to latest feed...</span>
+            </p>
+        </div>
     </div>
+
+    <main class="container">
+        <section style="text-align: center; padding: 3rem 0;">
+            <div class="loading">
+                <div class="spinner"></div>
+            </div>
+            <p style="margin-top: 2rem; color: var(--text-secondary);">
+                <a href="./{{ latest_date }}/index.html" style="color: var(--primary); font-weight: 600; text-decoration: none;">
+                    Click here if not redirected automatically →
+                </a>
+            </p>
+        </section>
+    </main>
+
+    <script src="static/script.js"></script>
 </body>
 </html>

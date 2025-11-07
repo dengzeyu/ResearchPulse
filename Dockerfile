@@ -14,8 +14,8 @@ COPY pyproject.toml .
 COPY README.md .
 COPY src/ ./src/
 
-# Install Python dependencies
-RUN pip install --no-cache-dir .
+# Install Python dependencies with arxiv support
+RUN pip install --no-cache-dir ".[arxiv]"
 
 # Download NLTK data
 RUN python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords')"
@@ -29,7 +29,10 @@ RUN mkdir -p /app/output
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/app/src
+
+# Set working directory to src for proper imports
+WORKDIR /app/src
 
 # Run the application
-CMD ["python", "src/main.py"]
+CMD ["python", "main.py"]

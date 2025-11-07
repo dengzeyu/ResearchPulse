@@ -56,14 +56,14 @@ class InsightsGenerator:
         if not papers:
             return []
 
-        # Prepare paper summaries
+        # Prepare paper summaries with titles for reference
         paper_summaries = []
         for i, paper in enumerate(papers[:20], 1):  # Top 20 papers
-            summary = f"{i}. {paper.title}\n"
+            summary = f"[{i}] {paper.title}\n"
             if paper.summary:
-                summary += f"   {paper.summary}\n"
-            else:
-                summary += f"   {paper.abstract[:200]}...\n"
+                summary += f"    {paper.summary}\n"
+            elif paper.abstract:
+                summary += f"    {paper.abstract[:200]}...\n"
             paper_summaries.append(summary)
 
         prompt = self.research_ideas_config.get('prompt', '')
@@ -75,13 +75,17 @@ class InsightsGenerator:
 
 {prompt}
 
+For each idea, provide specific reasoning that references the papers above using [paper number].
+
 Format each idea as:
 **Idea Title**
 Description: 2-3 sentences explaining the idea
-Why it matters: 1 sentence on potential impact"""
+Reasoning: 2-3 sentences explaining why this makes sense, referencing specific papers [1], [2], etc.
+Impact: 1 sentence on potential impact"""
 
         try:
-            response = self._generate(full_prompt, max_tokens=1500)
+            response = self._generate(full_prompt, max_tokens=2000)
+            logger.debug(f"LLM Response for research ideas:\n{response}")
             ideas = self._parse_research_ideas(response)
             logger.info(f"Generated {len(ideas)} research ideas")
             return ideas
@@ -181,21 +185,54 @@ Evidence: Number of papers and key examples"""
         lines = response.split('\n')
 
         current_idea = {}
+        current_field = None
+
         for line in lines:
             line = line.strip()
 
+            # Match numbered titles: "1. Title" or "### 1. Title"
+            if line and (line[0].isdigit() or line.startswith('###')):
+                # Extract title by removing numbers and markdown
+                title = line
+                # Remove leading numbers like "1." or "1)"
+                import re
+                title = re.sub(r'^\d+[\.\)]\s*', '', title)
+                # Remove markdown headers
+                title = re.sub(r'^#+\s*', '', title)
+
+                if title and title != line:  # Only if we removed something
+                    if current_idea and 'title' in current_idea:
+                        ideas.append(current_idea)
+                    current_idea = {'title': title.strip()}
+                    current_field = None
+                    continue
+
+            # Match markdown titles: "**Title**"
             if line.startswith('**') and line.endswith('**'):
-                if current_idea:
+                if current_idea and 'title' in current_idea:
                     ideas.append(current_idea)
                 current_idea = {'title': line.strip('*').strip()}
+                current_field = None
+                continue
 
-            elif line.startswith('Description:'):
+            # Match field labels
+            if line.startswith('Description:'):
                 current_idea['description'] = line.replace('Description:', '').strip()
-
+                current_field = 'description'
+            elif line.startswith('Reasoning:'):
+                current_idea['reasoning'] = line.replace('Reasoning:', '').strip()
+                current_field = 'reasoning'
+            elif line.startswith('Impact:'):
+                current_idea['impact'] = line.replace('Impact:', '').strip()
+                current_field = 'impact'
             elif line.startswith('Why it matters:'):
                 current_idea['impact'] = line.replace('Why it matters:', '').strip()
+                current_field = 'impact'
+            # Continue multi-line field content
+            elif line and current_field and current_field in current_idea:
+                current_idea[current_field] += ' ' + line
 
-        if current_idea:
+        if current_idea and 'title' in current_idea:
             ideas.append(current_idea)
 
         return ideas

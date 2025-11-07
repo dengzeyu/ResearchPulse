@@ -1,43 +1,27 @@
 # Research interests to track
 keywords:
-  - area: "Machine Learning"
+  - area: "Solid State Battery"
     terms:
-      - "transformers"
-      - "large language models"
-      - "LLMs"
-      - "diffusion models"
-      - "reinforcement learning"
-    sources: ["arxiv", "google_scholar", "semantic_scholar"]
+      - "solid state battery"
+      - "all-solid-state battery"
+      - "solid electrolyte"
+    sources: ["arxiv"]
+    max_results: 5
 
-  - area: "Computer Vision"
-    terms:
-      - "vision transformers"
-      - "object detection"
-      - "image generation"
-    sources: ["arxiv", "semantic_scholar"]
+# Specific authors to follow (disabled for testing)
+authors: []
 
-# Specific authors to follow
-authors:
-  - name: "Yoshua Bengio"
-    affiliations: ["Mila", "University of Montreal"]
-  - name: "Geoffrey Hinton"
-  - name: "Yann LeCun"
-
-# Key papers to track citations for
-key_papers:
-  - title: "Attention Is All You Need"
-    arxiv_id: "1706.03762"
-  - title: "BERT: Pre-training of Deep Bidirectional Transformers"
-    arxiv_id: "1810.04805"
+# Key papers to track citations for (disabled for testing)
+key_papers: []
 
 # Journals and conferences to monitor
 journals:
   - name: "Nature"
-    sections: ["Machine Intelligence", "Computer Science"]
+    sections: ["Materials Science", "Energy"]
   - name: "Science"
-  - name: "NeurIPS"
-  - name: "ICML"
-  - name: "ICLR"
+  - name: "Journal of American Chemical Society"
+  - name: "Nature Materials"
+  - name: "Nature Energy"
 
 # Filtering preferences
 filters:

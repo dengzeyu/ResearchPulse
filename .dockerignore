@@ -1,7 +1,8 @@
 .git
 .gitignore
-*.md
 .env
+# Keep README.md for pyproject.toml
+!README.md
 __pycache__
 *.pyc
 *.pyo
