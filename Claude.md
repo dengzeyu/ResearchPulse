@@ -15,7 +15,12 @@ AI-powered research paper aggregator that generates daily insights, research ide
 │   │   ├── author.py      # Track specific authors
 │   │   ├── citations.py   # Track paper citations
 │   │   └── journals.py    # Scrape journal websites
-│   ├── social/            # Social media APIs (Twitter/X, Reddit, HackerNews)
+│   ├── social/
+│   │   ├── twitter.py     # Twitter/X API
+│   │   ├── linkedin.py    # LinkedIn API
+│   │   ├── wechat.py      # WeChat public accounts
+│   │   ├── reddit.py      # Reddit API
+│   │   └── hackernews.py  # HackerNews API
 │   ├── analyzer.py        # LLM-powered paper analysis
 │   ├── insights.py        # Generate research ideas & hot topics
 │   ├── processor.py       # Filter, rank, deduplicate papers
@@ -45,9 +50,11 @@ AI-powered research paper aggregator that generates daily insights, research ide
 - PubMed API
 
 **Social Signals:**
-- Twitter/X API - trending research hashtags
-- Reddit API - r/MachineLearning, r/science posts
-- HackerNews API - paper discussions
+- **Twitter/X API** - trending research hashtags, paper discussions
+- **LinkedIn API** - professional network posts, researcher updates
+- **WeChat Public Accounts** - Chinese research community articles
+- **Reddit API** - r/MachineLearning, r/science posts
+- **HackerNews API** - paper discussions
 
 ### 2. AI Analysis
 **LLM Integration (configurable):**
@@ -123,7 +130,20 @@ class JournalScraper:
 **src/social/twitter.py**
 ```python
 class TwitterFetcher:
-    def get_trending_papers(self, hashtags: List[str]) -> List[Tweet]
+    def get_trending_papers(self, hashtags: List[str], users: List[str]) -> List[Tweet]
+```
+
+**src/social/linkedin.py**
+```python
+class LinkedInFetcher:
+    def get_posts(self, keywords: List[str], companies: List[str]) -> List[Post]
+```
+
+**src/social/wechat.py**
+```python
+class WeChatFetcher:
+    def get_articles(self, account_ids: List[str]) -> List[Article]:
+        """Fetch articles from WeChat public accounts"""
 ```
 
 ## Configuration
@@ -187,11 +207,29 @@ journals:
 **config/social.yaml**
 ```yaml
 twitter:
-  hashtags: ["#MachineLearning", "#AI", "#DeepLearning"]
+  hashtags: ["#MachineLearning", "#AI", "#DeepLearning", "#NeurIPS", "#ICLR"]
+  track_users: ["ylecun", "goodfellow_ian", "karpathy"]
+
+linkedin:
+  track_keywords: ["AI research", "machine learning paper", "new publication"]
+  track_companies: ["DeepMind", "OpenAI", "Anthropic", "Meta AI"]
+
+wechat:
+  public_accounts:
+    - name: "机器之心"  # Machine Heart
+      account_id: "almosthuman2014"
+    - name: "AI科技评论"  # AI Tech Review
+      account_id: "aitechtalk"
+    - name: "新智元"  # AI Era
+      account_id: "AI_era"
+
 reddit:
   subreddits: ["MachineLearning", "deeplearning", "ArtificialIntelligence"]
+  min_upvotes: 50
+
 hackernews:
   keywords: ["paper", "research", "arxiv"]
+  min_points: 100
 ```
 
 ## Docker Deployment
@@ -236,6 +274,11 @@ SEMANTIC_SCHOLAR_KEY=...
 # Social Media
 TWITTER_API_KEY=...
 TWITTER_API_SECRET=...
+TWITTER_BEARER_TOKEN=...
+LINKEDIN_API_KEY=...
+LINKEDIN_API_SECRET=...
+WECHAT_APP_ID=...
+WECHAT_APP_SECRET=...
 REDDIT_CLIENT_ID=...
 REDDIT_CLIENT_SECRET=...
 
@@ -283,7 +326,7 @@ docker run -p 8080:80 -v ./output:/usr/share/nginx/html nginx
    - Author publications (tracked authors)
    - Citation tracking (papers citing key works)
    - Journal websites (Nature, Science, etc.)
-2. **Collect social data** from Twitter/Reddit/HN
+2. **Collect social data** from Twitter/X, LinkedIn, WeChat, Reddit, HackerNews
 3. **Deduplicate & filter** papers
 4. **Analyze with LLM**: summarize, extract insights
 5. **Rank papers** by relevance + social buzz + author reputation
