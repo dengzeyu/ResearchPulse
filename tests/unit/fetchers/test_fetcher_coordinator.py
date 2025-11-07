@@ -4,6 +4,10 @@ Unit tests for the FetcherCoordinator class.
 import pytest
 from unittest.mock import Mock, MagicMock, patch
 from datetime import datetime
+
+# Skip all tests if arxiv is not installed (optional dependency)
+pytest.importorskip("arxiv", reason="arxiv package not installed")
+
 from fetchers.coordinator import FetcherCoordinator
 from fetchers.base import Paper
 

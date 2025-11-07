@@ -5,6 +5,10 @@ import pytest
 from unittest.mock import Mock, MagicMock, patch
 from datetime import datetime, timedelta
 from freezegun import freeze_time
+
+# Skip all tests if arxiv is not installed (optional dependency)
+pytest.importorskip("arxiv", reason="arxiv package not installed")
+
 from fetchers.arxiv_fetcher import ArxivFetcher
 from fetchers.base import Paper
 

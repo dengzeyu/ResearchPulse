@@ -383,9 +383,11 @@ cd ResearchPulse
 pip install -e .              # Main dependencies only
 pip install -e ".[test]"      # With test dependencies
 pip install -e ".[dev]"       # With all dev tools (black, ruff, mypy)
+pip install -e ".[arxiv]"     # With optional arXiv support
+pip install -e ".[all]"       # With all optional dependencies
 
-# Alternative: traditional requirements.txt
-pip install -r requirements.txt
+# Note: arXiv is optional due to dependency issues on some systems
+# The project works fully without it using Semantic Scholar
 ```
 
 ### Environment Variables (.env)

@@ -58,6 +58,10 @@ pip install -e ".[test]"
 
 # Or install all dev dependencies
 pip install -e ".[dev]"
+
+# Note: arXiv tests are skipped if arxiv package is not installed
+# This is intentional as arxiv has dependency issues on some systems
+# To include arXiv tests: pip install -e ".[arxiv,test]"
 ```
 
 ### Run All Tests
@@ -93,14 +97,14 @@ pytest tests/unit/test_*.py -v
 
 ## Test Statistics
 
-Total test count: **86+ tests**
+Total test count: **86 tests** (2 optional arXiv tests skipped without arxiv package)
 - Paper model: 12 tests
 - Processor: 24 tests
 - Analyzer: 18 tests
 - Insights: 18 tests
-- ArxivFetcher: ~10 tests
+- ArxivFetcher: ~10 tests (optional, skipped without arxiv package)
 - SemanticScholarFetcher: 14 tests
-- FetcherCoordinator: ~10 tests
+- FetcherCoordinator: ~10 tests (optional, skipped without arxiv package)
 
 ## Key Testing Patterns
 
